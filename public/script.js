@@ -1,24 +1,31 @@
-const socket = io('http://localhost:4000/');
+const socket = io();
 const messageContainer = document.getElementById('message-container')
 const roomContainer = document.getElementById('room-container')
 const messageForm = document.getElementById('send-container')
 const messageInput = document.getElementById('message-input')
+const leaveButton = document.getElementById('leave-button')
 
 if (messageForm != null) {
   const name = prompt('What is your name?')
   appendMessage('You joined')
   socket.emit('new-user', roomName, name)
-
   messageForm.addEventListener('submit', e => {
     e.preventDefault()
     const message = messageInput.value
     appendMessage(`You: ${message}`)
     socket.emit('send-chat-message', roomName, message)
-    socket.leave(room);
-    socket.to(room).emit('disconnect', socket.id);
     messageInput.value = ''
   })
 }
+
+
+if (leaveButton != null) {
+    leaveButton.addEventListener('click', room =>{
+      console.log('[socket]','disconnect :', room);
+      socket.to(room).emit('disconnect', socket.id)
+    })
+}
+
 
 socket.on('room-created', room => {
   const roomElement = document.createElement('div')

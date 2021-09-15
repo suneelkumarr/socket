@@ -45,9 +45,6 @@ app.get('/:room', (req, res) => {
   })
 
 
-
-
-
 io.on('connect', (socket) => {
     console.log('user is connected');
     socket.on('new-user', (room, name) => {
@@ -59,7 +56,8 @@ io.on('connect', (socket) => {
         socket.to(room).emit('chat-message', { message: message, name: rooms[room].users[socket.id] })
       })
 
-      socket.on('disconnect', () => {
+      socket.on('disconnect', (room) => {
+        socket.leave(room);
         console.log('user is disconnected');
         getUserRooms(socket).forEach(room => {
           socket.to(room).emit('user-disconnected', rooms[room].users[socket.id])
