@@ -1,12 +1,9 @@
 const express = require('express');
 const cors = require('cors')
-const helmet = require("helmet");
 const morgan = require("morgan");
-const multer = require("multer");
 const app = express();
 const server = require('http').createServer(app)
 const port = process.env.PORT || 4000;
-const path = require('path');
 const io = require("socket.io")(server,{
     cors:{
         origin:"*",
@@ -19,11 +16,10 @@ app.use(express.static('public'))
 app.use(express.urlencoded({ extended: true }))
 app.use(cors());
 app.use(express.json());
-app.use(helmet());
 app.use(cors())
 app.use(morgan("common"));
 
-const rooms = { }
+let rooms = {}
 
 app.get('/',(req,res)=>{ 
     res.render('index', { rooms: rooms })
@@ -56,15 +52,15 @@ io.on('connect', (socket) => {
     socket.on('new-user', (room, name) => {
         socket.join(room)
         rooms[room].users[socket.id] = name
-        socket.to(room).broadcast.emit('user-connected', name)
+        socket.to(room).emit('user-connected', name)
       })
       socket.on('send-chat-message', (room, message) => {
-        socket.to(room).broadcast.emit('chat-message', { message: message, name: rooms[room].users[socket.id] })
+        socket.to(room).emit('chat-message', { message: message, name: rooms[room].users[socket.id] })
       })
 
       socket.on('disconnect', () => {
         getUserRooms(socket).forEach(room => {
-          socket.to(room).broadcast.emit('user-disconnected', rooms[room].users[socket.id])
+          socket.to(room).emit('user-disconnected', rooms[room].users[socket.id])
           delete rooms[room].users[socket.id]
         })
       })
