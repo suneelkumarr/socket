@@ -55,7 +55,11 @@ io.on('connect', (socket) => {
       socket.on('send-chat-message', (room, message) => {
         socket.to(room).emit('chat-message', { message: message, name: rooms[room].users[socket.id] })
       })
-
+      //user is typing
+      socket.on("typing", function (data) {
+        socket.broadcast.emit("typing", data);
+      });
+      //disconnecting the user
       socket.on('disconnect', (room) => {
         socket.leave(room);
         console.log('user is disconnected');

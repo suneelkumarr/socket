@@ -4,11 +4,14 @@ const roomContainer = document.getElementById('room-container')
 const messageForm = document.getElementById('send-container')
 const messageInput = document.getElementById('message-input')
 const leaveButton = document.getElementById('leave-button')
+const fallback = document.querySelector(".fallback");
+
+let userName = ""
 
 if (messageForm != null) {
-  const name = prompt('What is your name?')
+  userName = prompt('What is your name?')
   appendMessage('You joined')
-  socket.emit('new-user', roomName, name)
+  socket.emit('new-user', roomName, userName)
   messageForm.addEventListener('submit', e => {
     e.preventDefault()
     const message = messageInput.value
@@ -17,7 +20,11 @@ if (messageForm != null) {
     messageInput.value = ''
   })
 }
-
+if (messageInput != null) {
+messageInput.addEventListener("keyup", () => {
+  socket.emit("typing", {isTyping: messageInput.value.length > 0, userName});
+});
+}
 
 if (leaveButton != null) {
     leaveButton.addEventListener('click', room =>{
@@ -48,6 +55,19 @@ socket.on('user-connected', name => {
 socket.on('user-disconnected', name => {
   appendMessage(`${name} disconnected`)
 })
+
+socket.on("typing", function (data) {
+  const { isTyping, userName } = data;
+
+  if (!isTyping) {
+    fallback.innerHTML = "";
+    return;
+  }
+
+  fallback.innerHTML = `<p>${userName} is typing...</p>`;
+});
+
+
 
 function appendMessage(message) {
   const messageElement = document.createElement('div')
