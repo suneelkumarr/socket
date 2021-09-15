@@ -20,6 +20,7 @@ app.use(cors())
 app.use(morgan("common"));
 
 let rooms = {}
+const typers = {}
 
 app.get('/',(req,res)=>{ 
     res.render('index', { rooms: rooms })
@@ -59,6 +60,7 @@ io.on('connect', (socket) => {
       })
 
       socket.on('disconnect', () => {
+        console.log('user is disconnected');
         getUserRooms(socket).forEach(room => {
           socket.to(room).emit('user-disconnected', rooms[room].users[socket.id])
           delete rooms[room].users[socket.id]
